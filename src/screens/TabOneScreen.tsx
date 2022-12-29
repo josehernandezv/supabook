@@ -5,6 +5,7 @@ import { Text, View } from "../components/Themed";
 import { RootTabScreenProps } from "../types";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import AddPostForm from "../components/AddPostForm";
 
 export default function TabOneScreen({
   navigation,
@@ -13,7 +14,12 @@ export default function TabOneScreen({
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const { data, error } = await supabase.from("posts").select("*");
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", {
+          ascending: false,
+        });
 
       if (error) {
         console.log(error);
@@ -25,10 +31,21 @@ export default function TabOneScreen({
     fetchPosts();
   }, []);
 
-  console.log(posts);
+  const handleSubmit = async (content: string) => {
+    const { data, error } = await supabase
+      .from("posts")
+      .insert({ content })
+      .select();
+    if (error) {
+      console.log(error);
+    } else {
+      setPosts([data[0], ...posts]);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
+      <AddPostForm onSubmit={handleSubmit} />
       <View
         style={styles.separator}
         lightColor="#eee"
