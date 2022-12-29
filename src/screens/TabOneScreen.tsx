@@ -6,29 +6,15 @@ import { RootTabScreenProps } from "../types";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import AddPostForm from "../components/AddPostForm";
+import { fetchPosts, Posts } from "../lib/api";
 
 export default function TabOneScreen({
   navigation,
 }: RootTabScreenProps<"TabOne">) {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Posts>([]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("created_at", {
-          ascending: false,
-        });
-
-      if (error) {
-        console.log(error);
-      } else {
-        setPosts(data);
-      }
-    };
-
-    fetchPosts();
+    fetchPosts().then((data) => setPosts(data));
   }, []);
 
   const handleSubmit = async (content: string) => {
