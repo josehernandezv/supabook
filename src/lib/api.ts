@@ -17,3 +17,4 @@ export const fetchPosts = async () => {
 };
 
 export type Posts = Awaited<ReturnType<typeof fetchPosts>>;
+export type Post = Posts[number];
