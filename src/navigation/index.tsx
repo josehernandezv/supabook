@@ -20,12 +20,14 @@ import ModalScreen from "../screens/ModalScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import HomeScreen from "../screens/HomeScreen";
 import TabTwoScreen from "../screens/TabTwoScreen";
+import AuthScreen from "../screens/AuthScreen";
 import {
   RootStackParamList,
   RootTabParamList,
   RootTabScreenProps,
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
+import { useUserInfo } from "../lib/userContext";
 
 const darkTheme = {
   ...DarkTheme,
@@ -65,11 +67,12 @@ export default function Navigation({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
+  const { session } = useUserInfo();
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Root"
-        component={BottomTabNavigator}
+        component={session ? BottomTabNavigator : AuthScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
