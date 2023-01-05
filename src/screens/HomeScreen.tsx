@@ -27,6 +27,16 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
     }
   };
 
+  const handleDeletePost = async (id: string) => {
+    const { error } = await supabase.from("posts").delete().eq("id", id);
+    if (error) {
+      console.log(error);
+      Alert.alert("Server Error", error.message);
+    } else {
+      setPosts(posts.filter((post) => post.id !== id));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <AddPostForm onSubmit={handleSubmit} />
@@ -34,7 +44,9 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
         data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingTop: 8 }}
-        renderItem={({ item }) => <PostCard post={item} />}
+        renderItem={({ item }) => (
+          <PostCard post={item} onDelete={() => handleDeletePost(item.id)} />
+        )}
       />
     </View>
   );

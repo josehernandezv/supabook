@@ -2,14 +2,17 @@ import { Image, StyleSheet, TouchableOpacity } from "react-native";
 import type { Post, Profile } from "../lib/api";
 import { Card, Text, useThemeColor } from "./Themed";
 import { FontAwesome } from "@expo/vector-icons";
+import { useUserInfo } from "../lib/userContext";
 
 interface Props {
   post: Post;
+  onDelete: () => void;
 }
 
-export default function PostCard({ post }: Props) {
+export default function PostCard({ post, onDelete }: Props) {
   const color = useThemeColor({}, "primary");
   const profile = post.profile as Profile;
+  const user = useUserInfo();
   return (
     <Card style={styles.container}>
       {/* Header */}
@@ -34,6 +37,11 @@ export default function PostCard({ post }: Props) {
           <TouchableOpacity>
             <FontAwesome name="heart-o" size={24} color={color} />
           </TouchableOpacity>
+          {user?.profile?.id === post.user_id && (
+            <TouchableOpacity onPress={onDelete}>
+              <FontAwesome name="trash-o" size={24} color={color} />
+            </TouchableOpacity>
+          )}
         </Card>
       </Card>
     </Card>
@@ -76,5 +84,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });

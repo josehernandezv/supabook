@@ -6,17 +6,14 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Profile } from "./api";
 import { supabase } from "./supabase";
 
 // definir context para guardar el session y el profile
-export interface UserProfile {
-  username: string;
-  avatarUrl?: string;
-}
 
 export interface UserInfo {
   session: Session | null;
-  profile: UserProfile | null;
+  profile: Profile | null;
 }
 
 const UserContext = createContext<UserInfo>({
