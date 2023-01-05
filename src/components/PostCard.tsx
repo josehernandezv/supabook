@@ -1,5 +1,5 @@
 import { Image, StyleSheet, TouchableOpacity } from "react-native";
-import { Post } from "../lib/api";
+import type { Post, Profile } from "../lib/api";
 import { Card, Text, useThemeColor } from "./Themed";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -9,6 +9,7 @@ interface Props {
 
 export default function PostCard({ post }: Props) {
   const color = useThemeColor({}, "primary");
+  const profile = post.profile as Profile;
   return (
     <Card style={styles.container}>
       {/* Header */}
@@ -17,7 +18,7 @@ export default function PostCard({ post }: Props) {
           source={{ uri: "https://picsum.photos/200" }}
           style={styles.avatar}
         />
-        <Text style={styles.username}>John Doe</Text>
+        <Text style={styles.username}>{profile.username}</Text>
       </Card>
       {/* Image */}
       {post.image && (

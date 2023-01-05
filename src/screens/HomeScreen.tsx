@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet } from "react-native";
+import { Alert, FlatList, StyleSheet } from "react-native";
 import { Text, View } from "../components/Themed";
 import { RootTabScreenProps } from "../types";
 import { useState, useEffect } from "react";
@@ -18,9 +18,10 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
     const { data, error } = await supabase
       .from("posts")
       .insert({ content })
-      .select();
+      .select("*, profile: profiles(username)");
     if (error) {
       console.log(error);
+      Alert.alert("Server Error", error.message);
     } else {
       setPosts([data[0], ...posts]);
     }
