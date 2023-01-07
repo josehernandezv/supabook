@@ -95,6 +95,7 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
+  const { profile } = useUserInfo();
 
   return (
     <BottomTab.Navigator
@@ -116,7 +117,7 @@ function BottomTabNavigator() {
         name="TabTwo"
         component={TabTwoScreen}
         options={{
-          title: "Tab Two",
+          title: profile?.username || "",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
