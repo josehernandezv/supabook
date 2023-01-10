@@ -9,6 +9,29 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: number
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          receiver_id?: string
+          sender_id?: string
+        }
+      }
       post_likes: {
         Row: {
           created_at: string | null

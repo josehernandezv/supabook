@@ -5,7 +5,7 @@ import { Profile } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import { useUserInfo } from "../lib/userContext";
 
-export default function TabTwoScreen() {
+export default function ProfileScreen() {
   const { profile, loading, saveProfile } = useUserInfo();
 
   return (

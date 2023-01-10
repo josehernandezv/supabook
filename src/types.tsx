@@ -20,6 +20,7 @@ export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
   Modal: undefined;
   NotFound: undefined;
+  Chat: { contactId: string; username: string };
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -27,7 +28,8 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
 
 export type RootTabParamList = {
   Home: undefined;
-  TabTwo: undefined;
+  Contacts: undefined;
+  Profile: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =

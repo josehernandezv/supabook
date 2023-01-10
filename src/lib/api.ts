@@ -57,3 +57,37 @@ export const fetchLikes = async (postId: string) => {
 
 export type Likes = Awaited<ReturnType<typeof fetchLikes>>;
 export type Like = Likes[number];
+
+export const fetchContacts = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("username, avatar_url, id")
+    .neq("id", userId);
+  if (error) {
+    console.log("error", error);
+    return [];
+  } else {
+    return data;
+  }
+};
+
+export type Contacts = Awaited<ReturnType<typeof fetchContacts>>;
+export type Contact = Contacts[number];
+
+export const fetchMessages = async (userId: string, contactId: string) => {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*")
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+    .or(`sender_id.eq.${contactId},receiver_id.eq.${contactId}`)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.log("error", error.message);
+    return [];
+  } else {
+    return data;
+  }
+};
+
+export type Messages = Awaited<ReturnType<typeof fetchMessages>>;
+export type Message = Messages[number];
