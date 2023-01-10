@@ -6,13 +6,16 @@ import {
   SafeAreaView,
   StyleSheet,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
 import { Button, Text, TextInput, View } from "./Themed";
-import { Profile } from "../lib/api";
+import { downloadAvatar, Profile } from "../lib/api";
+import Avatar from "./Avatar";
+import * as ImagePicker from "expo-image-picker";
 
 interface ProfileFormProps {
   profile: Profile | null;
-  onSave: (updatedProfile: Profile) => void;
+  onSave: (updatedProfile: Profile, avatarUpdated: boolean) => void;
   onLogout: () => void;
   loading: boolean;
 }
@@ -24,16 +27,31 @@ export default function ProfileForm({
   onLogout,
 }: ProfileFormProps) {
   const [username, setUsername] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarUpdated, setAvatarUpdated] = useState(false);
 
   useEffect(() => {
     if (profile?.username) {
       setUsername(profile.username);
     }
+    if (profile?.avatar_url) {
+      downloadAvatar(profile.avatar_url).then(setAvatarUrl);
+    }
   }, [profile]);
 
   const handleSubmit = () => {
     if (profile) {
-      onSave({ ...profile, username });
+      onSave({ ...profile, username, avatar_url: avatarUrl }, avatarUpdated);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
+    if (!result.canceled) {
+      setAvatarUrl(result.assets[0].uri);
+      setAvatarUpdated(true);
     }
   };
 
@@ -46,6 +64,12 @@ export default function ProfileForm({
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.inner}>
             <View style={styles.input}>
+              <TouchableOpacity
+                style={styles.avatarButton}
+                onPress={handlePickImage}
+              >
+                <Avatar uri={avatarUrl} size={120} />
+              </TouchableOpacity>
               <TextInput
                 placeholder="Nombre de usuario"
                 value={username}
@@ -79,5 +103,9 @@ const styles = StyleSheet.create({
   },
   input: {
     paddingVertical: 8,
+  },
+  avatarButton: {
+    alignItems: "center",
+    marginBottom: 16,
   },
 });

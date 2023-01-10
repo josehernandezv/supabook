@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 export const fetchPosts = async () => {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, profile: profiles(username)")
+    .select("*, profile: profiles(username, avatar_url)")
     .order("created_at", {
       ascending: false,
     });
@@ -15,6 +15,25 @@ export const fetchPosts = async () => {
   } else {
     console.log(data);
     return data;
+  }
+};
+
+export const downloadAvatar = async (path: string): Promise<string> => {
+  try {
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .download(path);
+    if (error) throw error;
+    const fr = new FileReader();
+    fr.readAsDataURL(data);
+    return new Promise((resolve) => {
+      fr.onload = () => {
+        resolve(fr.result as string);
+      };
+    });
+  } catch (err) {
+    console.log("error", err);
+    return "";
   }
 };
 

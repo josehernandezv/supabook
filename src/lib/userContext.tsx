@@ -1,14 +1,14 @@
-import { Session } from '@supabase/supabase-js';
+import { Session } from "@supabase/supabase-js";
 import {
   createContext,
   ReactNode,
   useContext,
   useEffect,
   useState,
-} from 'react';
-import { Alert } from 'react-native';
-import { Profile } from './api';
-import { supabase } from './supabase';
+} from "react";
+import { Alert } from "react-native";
+import { Profile } from "./api";
+import { supabase } from "./supabase";
 
 // definir context para guardar el session y el profile
 
@@ -16,7 +16,7 @@ export interface UserInfo {
   session: Session | null;
   profile: Profile | null;
   loading?: boolean;
-  saveProfile?: (updatedProfile: Profile) => void;
+  saveProfile?: (updatedProfile: Profile, avatarUpdated: boolean) => void;
 }
 
 const UserContext = createContext<UserInfo>({
@@ -44,9 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getProfile = async () => {
     if (!userInfo.session) return;
     const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userInfo.session.user.id);
+      .from("profiles")
+      .select("*")
+      .eq("id", userInfo.session.user.id);
     if (error) {
       console.log(error);
     } else {
@@ -58,17 +58,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getProfile();
   }, [userInfo.session]);
 
-  const saveProfile = async (updatedProfile: Profile) => {
+  const saveProfile = async (
+    updatedProfile: Profile,
+    avatarUpdated: boolean
+  ) => {
     setLoading(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update(updatedProfile)
-      .eq('id', userInfo?.profile?.id);
-    if (error) {
-      Alert.alert('Server Error', error.message);
-    } else {
-      getProfile();
+
+    try {
+      if (updatedProfile.avatar_url && avatarUpdated) {
+        const { avatar_url } = updatedProfile;
+
+        const fileExt = avatar_url.split(".").pop();
+        const fileName = avatar_url.replace(/^.*[\\\/]/, "");
+        const filePath = `${Date.now()}.${fileExt}`;
+
+        const formData = new FormData();
+        const photo = {
+          uri: avatar_url,
+          name: fileName,
+          type: `image/${fileExt}`,
+        } as unknown as Blob;
+        formData.append("file", photo);
+
+        const { error } = await supabase.storage
+          .from("avatars")
+          .upload(filePath, formData);
+        if (error) throw error;
+        updatedProfile.avatar_url = filePath;
+      }
+      const { error } = await supabase
+        .from("profiles")
+        .update(updatedProfile)
+        .eq("id", userInfo?.profile?.id);
+      if (error) {
+        throw error;
+      } else {
+        getProfile();
+      }
+    } catch (error: any) {
+      Alert.alert("Server Error", error.message);
     }
+
     setLoading(false);
   };
 
