@@ -1,10 +1,11 @@
-import { Image, StyleSheet, TouchableOpacity } from "react-native";
-import { downloadAvatar, Post, Profile } from "../lib/api";
+import { Alert, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { downloadAvatar, fetchLikes, Likes, Post, Profile } from "../lib/api";
 import { Card, Text, useThemeColor } from "./Themed";
 import { FontAwesome } from "@expo/vector-icons";
 import { useUserInfo } from "../lib/userContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Avatar from "./Avatar";
+import { supabase } from "../lib/supabase";
 
 interface Props {
   post: Post;
@@ -16,12 +17,45 @@ export default function PostCard({ post, onDelete }: Props) {
   const profile = post.profile as Profile;
   const user = useUserInfo();
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [likes, setLikes] = useState<Likes>([]);
+
+  const userLikesPost = useMemo(
+    () => likes?.find((like) => like.user_id === user?.profile?.id),
+    [likes, user]
+  );
+
+  const getLikes = useCallback(
+    () => fetchLikes(post.id).then(setLikes),
+    [post]
+  );
+
+  useEffect(() => {
+    getLikes();
+  }, [getLikes]);
 
   useEffect(() => {
     if (profile?.avatar_url) {
       downloadAvatar(profile.avatar_url).then(setAvatarUrl);
     }
   }, [profile]);
+
+  const toggleLike = async () => {
+    if (!user.profile) return;
+    if (userLikesPost) {
+      const { error } = await supabase
+        .from("post_likes")
+        .delete()
+        .eq("id", userLikesPost.id);
+      if (error) Alert.alert("Server Error", error.message);
+    } else {
+      const { error } = await supabase.from("post_likes").insert({
+        post_id: post.id,
+        user_id: user?.profile?.id,
+      });
+      if (error) Alert.alert("Server Error", error.message);
+    }
+    getLikes();
+  };
 
   return (
     <Card style={styles.container}>
@@ -41,8 +75,16 @@ export default function PostCard({ post, onDelete }: Props) {
         <Text style={styles.contentText}>{post.content}</Text>
         {/* Footer */}
         <Card style={styles.footer}>
-          <TouchableOpacity>
-            <FontAwesome name="heart-o" size={24} color={color} />
+          <TouchableOpacity
+            style={{ flexDirection: "row", alignItems: "center" }}
+            onPress={toggleLike}
+          >
+            <FontAwesome
+              name={userLikesPost ? "heart" : "heart-o"}
+              size={24}
+              color={color}
+            />
+            <Text style={{ marginLeft: 4 }}>{likes.length}</Text>
           </TouchableOpacity>
           {user?.profile?.id === post.user_id && (
             <TouchableOpacity onPress={onDelete}>
